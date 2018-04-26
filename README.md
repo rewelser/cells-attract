@@ -2,6 +2,8 @@
 
 #### Web-based depiction of "cell"-like creatures attracted to one another
 
+*Latest version: v1.0*
+
 ![picture alt](cell_small.png "Cells in action")
 
 * ##### Two cells with congruent attraction behavior toward each other, triggered by arrow keys
