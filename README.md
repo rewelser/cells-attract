@@ -2,6 +2,8 @@
 
 #### Web-based depiction of "cell"-like creatures attracted to one another
 
+![picture alt](cell_small.png "Cells in action")
+
 * ##### Two cells with congruent attraction behavior toward each other, triggered by arrow keys
     * The left, right, and up arrow keys start top-right cell (cell A) only, and the down arrow key starts both cells A & B. All motion is automatic, and the direction of the arrow key has no impact on the direction in which the cell chooses to walk.
     * Iterative presses increases the speed of the attraction (watch out!)
