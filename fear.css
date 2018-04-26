@@ -35,4 +35,6 @@ body {background-color: dimgray;}
 
 .red {background-color: red !important;}
 .teal {background-color: aquamarine !important;}
+.target {background-color: orangered;}
+.obstacle {background-color: rgba(0,0,0,0.2) !important;}
 
