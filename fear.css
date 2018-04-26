@@ -37,4 +37,5 @@ body {background-color: dimgray;}
 .teal {background-color: aquamarine !important;}
 .target {background-color: orangered;}
 .obstacle {background-color: rgba(0,0,0,0.2) !important;}
+.sqmeter:hover {background-color: green !important;}
 
