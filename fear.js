@@ -72,41 +72,48 @@ Scenario: T3 and N3 in same location, Stamina 50
 $(window).on("load", function() {
     instantiate_environment();
 });
-
 var env = new Object();
     env.height = 30;
     env.width = 30;
     env.area = env.height * env.width;
+    env.cellcount = 1;
 var cell = new Object();
-
-    cell.range_diam = 0;
-    cell.range_radius = 0;
-    cell.range_area = 0;
-    cell.set_range_diam_radius = function(nbr) {
+    cell.nucleus = new Object();
+    cell.nucleus.location = Math.floor(Math.random() * env.area) + 1;
+    cell.nucleus.stamina = 100; // default: 100
+    cell.nucleus.range_diam = 0;
+    cell.nucleus.range_radius = 0;
+    cell.nucleus.range_area = 0;
+    cell.nucleus.prospective_range = 3; // default: 9
+    cell.nucleus.wander_preference = 1;
+    cell.nucleus.wander_rate = 100;    // default: 1000
+    cell.nucleus.pathmem = 20;
+    cell.nucleus.range = [];    // set by findrange()
+    cell.nucleus.set_range_diam_radius = function(nbr) {
         if ((nbr % 2) == 1) {
-            cell.range_diam = nbr;
+            cell.nucleus.range_diam = nbr;
         } else {
-            cell.range_diam = (nbr + 1);
+            cell.nucleus.range_diam = (nbr + 1);
         }
-        cell.range_radius = Math.floor(cell.range_diam/2);
-        cell.range_area = cell.range_diam * cell.range_diam;
+        cell.nucleus.range_radius = Math.floor(cell.nucleus.range_diam/2);
+        cell.nucleus.range_area = cell.nucleus.range_diam * cell.nucleus.range_diam;
     };
 
 
-    cell.findrange = function(cell_location, nbr) {
+    cell.nucleus.findrange = function(cell_location, nbr) {
         var range = [];
-        cell.set_range_diam_radius(nbr);
+        cell.nucleus.set_range_diam_radius(nbr);
         
-        for (i = -cell.range_radius; i < (cell.range_radius + 1); i++) {
+        for (i = -cell.nucleus.range_radius; i < (cell.nucleus.range_radius + 1); i++) {
             var temp_range = [];
-            var arr_start = (cell_location - cell.range_radius) + (env.height * i);
-            for (j = 0; j < cell.range_diam; j++) {
+            var arr_start = (cell_location - cell.nucleus.range_radius) + (env.height * i);
+            for (j = 0; j < cell.nucleus.range_diam; j++) {
                 temp_range.push(arr_start + j);
             }
             range = range.concat(temp_range);
         }
 
-        // Earth is round (cell.range)
+        // Earth is round (cell.nucleus.range)
         for (i = 0; i < range.length; i++) {
             if (range[i] < 0) {
                 range[i] = env.area + range[i];
@@ -117,142 +124,144 @@ var cell = new Object();
         return range;
     };
 
-    cell.findrange_outer = function() {
+    cell.nucleus.range = cell.nucleus.findrange(cell.nucleus.location, cell.nucleus.prospective_range);
+
+    cell.nucleus.findrange_outer = function() {
         var outer_range = new Object();
         
-        var temp_arr_0 = cell.range.slice(0, cell.range_diam);
+        var temp_arr_0 = cell.nucleus.range.slice(0, cell.nucleus.range_diam);
         for (i = 0; i < temp_arr_0.length; i++) {
             temp_arr_0[i] = temp_arr_0[i] - env.height;
         }
         outer_range[0] = temp_arr_0;
         
         var temp_arr_1 = [];
-        for (i = 0; i < cell.range_area; i += cell.range_diam) {
-            temp_arr_1.push(cell.range[i] - 1);
+        for (i = 0; i < cell.nucleus.range_area; i += cell.nucleus.range_diam) {
+            temp_arr_1.push(cell.nucleus.range[i] - 1);
         }
         outer_range[1] = temp_arr_1;
         
         var temp_arr_2 = [];
-        for (i = cell.range_diam - 1; i < cell.range_area; i += cell.range_diam) {
-            temp_arr_2.push(cell.range[i] + 1);
+        for (i = cell.nucleus.range_diam - 1; i < cell.nucleus.range_area; i += cell.nucleus.range_diam) {
+            temp_arr_2.push(cell.nucleus.range[i] + 1);
         }
         outer_range[2] = temp_arr_2;
         
-        var temp_arr_3 = cell.range.slice(cell.range.indexOf(cell.range[cell.range_area - cell.range_diam]));
+        var temp_arr_3 = cell.nucleus.range.slice(cell.nucleus.range.indexOf(cell.nucleus.range[cell.nucleus.range_area - cell.nucleus.range_diam]));
         for (i = 0; i < temp_arr_3.length; i++) {
             temp_arr_3[i] = temp_arr_3[i] + env.height;
         }
         outer_range[3] = temp_arr_3;
         
         return outer_range;
-        
-        
     };
 
-    cell.location = Math.floor(Math.random() * env.area) + 1;
-    cell.range = cell.findrange(cell.location, 9);
-    cell.nucleus = new Object();
-        cell.nucleus.wander_preference = 1;
-        cell.nucleus.wander_rate = 1000;
-        cell.nucleus.pathmem = 20;
-        cell.nucleus.move_left = function() {cell.location = cell.location - 1; cell.nucleus.calcmove();};
-        cell.nucleus.move_right = function() {cell.location = cell.location + 1; cell.nucleus.calcmove();};
-        cell.nucleus.move_up = function() {cell.location = cell.location - env.height; cell.nucleus.calcmove();};
-        cell.nucleus.move_down = function() {cell.location = cell.location + env.height; cell.nucleus.calcmove();};
-        cell.nucleus.calcmove = function() {
-            
-            // Earth is round (cell.location)
-            if (cell.location < 0) {
-                cell.location = env.area + cell.location;
-            } else if (cell.location > (env.area - 1)) {
-                cell.location = cell.location - env.area;
-            }
 
-            $(".cell").removeClass("cell");
-            $(".sqmeter").eq(cell.location).addClass("cell");
-            $(".range").removeClass("range");
-            
-            // add range to remembered
-            cell.nucleus.pathmem_decay();
-            
-            cell.range = cell.findrange(cell.location, 9);
-            for (i = 0; i < cell.range.length; i++) {
-                
-                $(".sqmeter").eq(cell.range[i]).addClass("range remembered");
-                $(".range").data("ttl", cell.nucleus.pathmem);
-            }
-        };
-        cell.nucleus.setWander = function() {setInterval(cell.nucleus.wander, cell.nucleus.wander_rate)};
-        cell.nucleus.setWander_smart = function() {setInterval(cell.nucleus.wander_smart, cell.nucleus.wander_rate)};
-        cell.nucleus.wanderLeft = function() {setInterval(cell.nucleus.move_left, cell.nucleus.wander_rate)};
+
+
+    cell.nucleus.move_left = function() {cell.nucleus.location = cell.nucleus.location - 1; cell.nucleus.calcmove();};
+    cell.nucleus.move_right = function() {cell.nucleus.location = cell.nucleus.location + 1; cell.nucleus.calcmove();};
+    cell.nucleus.move_up = function() {cell.nucleus.location = cell.nucleus.location - env.height; cell.nucleus.calcmove();};
+    cell.nucleus.move_down = function() {cell.nucleus.location = cell.nucleus.location + env.height; cell.nucleus.calcmove();};
+    cell.nucleus.calcmove = function() {
+
+        // Earth is round (cell.nucleus.location)
+        if (cell.nucleus.location < 0) {
+            cell.nucleus.location = env.area + cell.nucleus.location;
+        } else if (cell.nucleus.location > (env.area - 1)) {
+            cell.nucleus.location = cell.nucleus.location - env.area;
+        }
+
+        $(".cell").removeClass("cell");
+        $(".sqmeter").eq(cell.nucleus.location).addClass("cell");
+        $(".range").removeClass("range");
+
+        // add range to remembered
+        cell.nucleus.pathmem_decay();
+
+        cell.nucleus.range = cell.nucleus.findrange(cell.nucleus.location, cell.nucleus.prospective_range);
+        for (i = 0; i < cell.nucleus.range.length; i++) {
+
+            $(".sqmeter").eq(cell.nucleus.range[i]).addClass("range remembered");
+            $(".range").data("ttl", cell.nucleus.pathmem);
+        }
+    };
+    cell.nucleus.setWander = function() {setInterval(cell.nucleus.wander, cell.nucleus.wander_rate)};
+    cell.nucleus.setWander_smart = function() {setInterval(cell.nucleus.wander_smart, cell.nucleus.wander_rate)};
+    cell.nucleus.wanderLeft = function() {setInterval(cell.nucleus.move_left, cell.nucleus.wander_rate)};
         
-        // hard-coded wanders for different internal cell states; realistically the behavior of these wanders would be
-        // dynamically changed based on every internal state, as opposed to deterministic as "smart" and "simple";
-        // In essence, the "Smart" should "become" the simple if certain detrimental internal states are reached.
+    // hard-coded wanders for different internal cell states; realistically the behavior of these wanders would be
+    // dynamically changed based on every internal state, as opposed to deterministic as "smart" and "simple";
+    // In essence, the "Smart" should "become" the simple if certain detrimental internal states are reached.
 
-        // random wander (simple)
-        cell.nucleus.wander = function() {
-            
-            var move = Math.floor(Math.random() * 4) + 1;
-            if (move == 1) {cell.nucleus.move_left()}
-            else if (move == 2) {cell.nucleus.move_up()}
-            else if (move == 3) {cell.nucleus.move_right()}
-            else if (move == 4) {cell.nucleus.move_down()}
-        };
+    // random wander (simple)
+    cell.nucleus.wander = function() {
 
-        // smart wander (complex)
-                var bigarr = []; //
-        cell.nucleus.wander_smart = function() {
-            bigarr = [];
-            var arr = cell.findrange_outer();
-            var memcount_arr = [];
-            for (var key in arr) {
-                var memcount = 0;
-                for (i = 0; i < arr[key].length; i++) {
-                    if ($(".sqmeter").eq(arr[key][i]).hasClass("remembered")) {
-                        memcount++;
-                    }
-                }
-                memcount_arr.push(100 - Math.round(((memcount / arr[key].length) + 0.00001) * 100));
-            }
-            
-            var allequal = true;
-            for (i = 0; i < memcount_arr.length; i++) {
-                for (j = 0; j < memcount_arr[i]; j++) {
-                    bigarr.push(i);
-                }
-                if (memcount_arr[i] != memcount_arr[0]) {
-                    allequal = false;
+        var move = Math.floor(Math.random() * 4) + 1;
+        if (move == 1) {cell.nucleus.move_left()}
+        else if (move == 2) {cell.nucleus.move_up()}
+        else if (move == 3) {cell.nucleus.move_right()}
+        else if (move == 4) {cell.nucleus.move_down()}
+    };
+
+    // smart wander (complex)
+    cell.nucleus.wander_smart = function() {
+        var bigarr = [];
+        var arr = cell.nucleus.findrange_outer();
+        var memcount_arr = [];
+        for (var key in arr) {
+            var memcount = 0;
+            for (i = 0; i < arr[key].length; i++) {
+                if ($(".sqmeter").eq(arr[key][i]).hasClass("remembered")) {
+                    memcount++;
                 }
             }
-            
-            if (!allequal) {
-                var move = bigarr[Math.floor(Math.random() * bigarr.length)];
-                if (move == 0) {cell.nucleus.move_up()}
-                else if (move == 1) {cell.nucleus.move_left()}
-                else if (move == 2) {cell.nucleus.move_right()}
-                else if (move == 3) {cell.nucleus.move_down()}
-            } else {
-                var move = Math.floor(Math.random() * 4);
-                if (move == 0) {cell.nucleus.move_up()}
-                else if (move == 1) {cell.nucleus.move_left()}
-                else if (move == 2) {cell.nucleus.move_right()}
-                else if (move == 3) {cell.nucleus.move_down()}
+            memcount_arr.push(100 - Math.round(((memcount / arr[key].length) + 0.00001) * 100));
+        }
+
+        var allequal = true;
+        for (i = 0; i < memcount_arr.length; i++) {
+            for (j = 0; j < memcount_arr[i]; j++) {
+                bigarr.push(i);
             }
-        };
+            if (memcount_arr[i] != memcount_arr[0]) {
+                allequal = false;
+            }
+        }
 
-        cell.nucleus.pathmem_decay = function() {
-            $(".remembered").each(function() {
-                var ttl = $(this).data("ttl") - 1;
-                if (ttl >= 0) {
-                    $(this).data("ttl", ttl);
-                }
-                if (ttl == 0) {
-                    $(this).removeClass("remembered");
-                }
-            });
-        };
+        if (!allequal) {
+            var move = bigarr[Math.floor(Math.random() * bigarr.length)];
+            if (move == 0) {cell.nucleus.move_up()}
+            else if (move == 1) {cell.nucleus.move_left()}
+            else if (move == 2) {cell.nucleus.move_right()}
+            else if (move == 3) {cell.nucleus.move_down()}
+        } else {
+            var move = Math.floor(Math.random() * 4);
+            if (move == 0) {cell.nucleus.move_up()}
+            else if (move == 1) {cell.nucleus.move_left()}
+            else if (move == 2) {cell.nucleus.move_right()}
+            else if (move == 3) {cell.nucleus.move_down()}
+        }
+    };
 
+    cell.nucleus.pathmem_decay = function() {
+        $(".remembered").each(function() {
+            var ttl = $(this).data("ttl") - 1;
+            if (ttl >= 0) {
+                $(this).data("ttl", ttl);
+            }
+            if (ttl == 0) {
+                $(this).removeClass("remembered");
+            }
+        });
+    };
+
+    cell.nucleus.differentiate = function() {
+        if (cell.stamina == 100) {
+            env.cellcount++;
+            cell.stamina /= 2;
+        }
+    }
 
 $(window).on("load", function() {
     //instantiate_environment();
@@ -271,12 +280,12 @@ function instantiate_environment() { console.log("instantiate_environment");
         var td = "<td id=\"" + i + "\" class=\"sqmeter\"></td>";
         
         // instantiate cell
-        if ((i) == cell.location) {
+        if ((i) == cell.nucleus.location) {
             td = $(td).addClass("cell");
         }
         
         // instantiate cell range
-        if (cell.range.includes(i)) {
+        if (cell.nucleus.range.includes(i)) {
             td = $(td).addClass("range remembered");
             $(td).data("ttl", cell.nucleus.pathmem);
         }
