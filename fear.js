@@ -261,7 +261,7 @@ var cell = new Object();
             env.cellcount++;
             cell.stamina /= 2;
         }
-    }
+    };
 
 $(window).on("load", function() {
     //instantiate_environment();

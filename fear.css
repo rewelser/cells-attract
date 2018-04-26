@@ -17,9 +17,22 @@ body {background-color: dimgray;}
         height: 10px;
         width: 10px;
         outline: 1px solid rgba(0,0,0,0.2);}
+/*
         .sqmeter.cell, .sqmeter.cell.range {background-color: #E91E63;}
         .sqmeter.range {background-color: aquamarine;}
         .sqmeter.remembered:not(.range) {background-color: yellow;}
+*/
+/*
+
+        .sqmeter.cell, .sqmeter.cell.range {background-color: #E91E63;}
+        .sqmeter.range {background-color: aquamarine;}
+        .sqmeter.remembered:not(.range) {background-color: yellow;}
+*/
+
+.sqmeter[class*="cell_"] {background-color: #E91E63;}
+.sqmeter[class*="range_"]:not([class*="cell_"]) {background-color: aquamarine;}
+.sqmeter[class*="remembered_"]:not([class*="range_"]) {background-color: yellow;}
 
 .red {background-color: red !important;}
+.teal {background-color: aquamarine !important;}
 
