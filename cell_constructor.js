@@ -10,7 +10,7 @@ var env = new Object();
     env.instantiate = function() {
         var rowcount = 0;
         var tr = "<tr id=\"" + rowcount + "\"></tr>";
-        for (i = 0; i < env.area; i++) {
+        for (var i = 0; i < env.area; i++) {
             if ($(tr).children("td").length == env.width) {
                 $("#universe").append(tr);
                 rowcount++;
@@ -20,8 +20,8 @@ var env = new Object();
 
             tr = $(tr).append(td);
         }
-        for (i = 0; i < env.width; i++) {env.cols_arr.push(i)};
-        for (i = 0; i < env.area; i += env.height) {env.rows_arr.push(i)};
+        for (var i = 0; i < env.width; i++) {env.cols_arr.push(i)};
+        for (var i = 0; i < env.area; i += env.height) {env.rows_arr.push(i)};
         $("#universe").append(tr);
     };
 
@@ -59,17 +59,17 @@ function Cell(prosp_range, name, test_loc) {
         var range = [];
         this.set_range_diam_radius();
         
-        for (i = -this.range_radius; i < (this.range_radius + 1); i++) {
+        for (var i = -this.range_radius; i < (this.range_radius + 1); i++) {
             var temp_range = [];
             var arr_start = (this.location - this.range_radius) + (env.height * i);
-            for (j = 0; j < this.range_diam; j++) {
+            for (var j = 0; j < this.range_diam; j++) {
                 temp_range.push(arr_start + j);
             }
             range = range.concat(temp_range);
         }
 
         // Earth is round (this.nucleus.range)
-        for (i = 0; i < range.length; i++) {
+        for (var i = 0; i < range.length; i++) {
             if (range[i] < 0) {
                 range[i] = env.area + range[i];
             } else if (range[i] > (env.area - 1)) {
@@ -85,25 +85,25 @@ function Cell(prosp_range, name, test_loc) {
         var outer_range = new Object();
         
         var temp_arr_0 = this.range.slice(0, this.range_diam);
-        for (i = 0; i < temp_arr_0.length; i++) {
+        for (var i = 0; i < temp_arr_0.length; i++) {
             temp_arr_0[i] = temp_arr_0[i] - env.height;
         }
         outer_range[0] = temp_arr_0;
         
         var temp_arr_1 = [];
-        for (i = 0; i < this.range_area; i += this.range_diam) {
+        for (var i = 0; i < this.range_area; i += this.range_diam) {
             temp_arr_1.push(this.range[i] - 1);
         }
         outer_range[1] = temp_arr_1;
         
         var temp_arr_2 = [];
-        for (i = this.range_diam - 1; i < this.range_area; i += this.range_diam) {
+        for (var i = this.range_diam - 1; i < this.range_area; i += this.range_diam) {
             temp_arr_2.push(this.range[i] + 1);
         }
         outer_range[2] = temp_arr_2;
         
         var temp_arr_3 = this.range.slice(this.range.indexOf(this.range[this.range_area - this.range_diam]));
-        for (i = 0; i < temp_arr_3.length; i++) {
+        for (var i = 0; i < temp_arr_3.length; i++) {
             temp_arr_3[i] = temp_arr_3[i] + env.height;
         }
         outer_range[3] = temp_arr_3;
@@ -132,7 +132,7 @@ function Cell(prosp_range, name, test_loc) {
         this.pathmem_decay();
 
         this.findrange(this.location, this.prospective_range);
-        for (i = 0; i < this.range.length; i++) {
+        for (var i = 0; i < this.range.length; i++) {
 
             $(".sqmeter").eq(this.range[i]).addClass("range_" + this.name + " remembered_" + this.name);
             $(".range_" + this.name).data("ttl_" + this.name, this.pathmem);
@@ -169,23 +169,23 @@ function Cell(prosp_range, name, test_loc) {
 //        console.log(this.stamina);
         var bigarr = [];
         this.findrange_outer();
-        var memcount_arr = [];
+        var stim_arr = [];
         for (var key in this.range_outer) {
             var memcount = 0;
-            for (i = 0; i < this.range_outer[key].length; i++) {
+            for (var i = 0; i < this.range_outer[key].length; i++) {
                 if ($(".sqmeter").eq(this.range_outer[key][i]).hasClass("remembered_" + this.name)) {
                     memcount++;
                 }
             }
-            memcount_arr.push(100 - Math.round(((memcount / this.range_outer[key].length) + 0.00001) * 100));
+            stim_arr.push(100 - Math.round(((memcount / this.range_outer[key].length) + 0.00001) * 100));
         }
 
         var allequal = true;
-        for (i = 0; i < memcount_arr.length; i++) {
-            for (j = 0; j < memcount_arr[i]; j++) {
+        for (var i = 0; i < stim_arr.length; i++) {
+            for (var j = 0; j < stim_arr[i]; j++) {
                 bigarr.push(i);
             }
-            if (memcount_arr[i] != memcount_arr[0]) {
+            if (stim_arr[i] != stim_arr[0]) {
                 allequal = false;
             }
         }
@@ -230,120 +230,158 @@ function Cell(prosp_range, name, test_loc) {
             this.nucleus.wander_directed = function(target) {
                 var bigarr = [];
                 this.findrange_outer();
-                var memcount_arr = [];
+                var stim_arr = [];
+                
+                // account for preference to explore rather than retrace steps
                 for (var key in this.range_outer) {
                     var memcount = 0;
-                    for (i = 0; i < this.range_outer[key].length; i++) {
+                    for (var i = 0; i < this.range_outer[key].length; i++) {
                         if ($(".sqmeter").eq(this.range_outer[key][i]).hasClass("remembered_" + this.name)) {
                             memcount++;
                         }
                     }
-                    memcount_arr.push(100 - Math.round(((memcount / this.range_outer[key].length) + 0.00001) * 100));
+                    stim_arr.push(100 - Math.round(((memcount / this.range_outer[key].length) + 0.00001) * 100));
                 }
                 
-                console.log(memcount_arr);
+                // account for target acquisition preferences
+                if (target !== null) {
+                    this.set_target_loc(target);
+                    var x_direction, y_direction;
+
+                    if (this.loc_rel_to_targ[0] < 0) {x_direction = 1;}
+                    else {x_direction = 2;}
+                    if (this.loc_rel_to_targ[1] < 0) {y_direction = 0;}
+                    else {y_direction = 3;}
+                    
+                    for (var i = 0; i < (Math.abs(this.loc_rel_to_targ[0]) * 100); i++) {stim_arr[x_direction]++;}
+                    for (var i = 0; i < (Math.abs(this.loc_rel_to_targ[1]) * 100); i++) {stim_arr[y_direction]++;}
+                }
+
+                // account for obstacles
+                stim_arr = this.avoid_obstacles(stim_arr);
+                
+//                console.log(stim_arr);
                 
                 // bigarr calculation
                 var allequal = true;
-                for (i = 0; i < memcount_arr.length; i++) {
-                    for (j = 0; j < memcount_arr[i]; j++) {
+                for (var i = 0; i < stim_arr.length; i++) {
+                    for (var j = 0; j < stim_arr[i]; j++) {
                         bigarr.push(i);
                     }
-                    if (memcount_arr[i] != memcount_arr[0]) {
+                    if (stim_arr[i] != stim_arr[0]) {
                         allequal = false;
                     }
                 }
-
-                // addition of goal-oriented weights
-                this.set_target_loc(target);
-                var x_direction, y_direction;
-                if (this.loc_rel_to_targ[0] < 0) {x_direction = 1;}
-                else {x_direction = 2;}
-                if (this.loc_rel_to_targ[1] < 0) {y_direction = 0;}
-                else {y_direction = 3;}
-                for (i = 0; i < (Math.abs(this.loc_rel_to_targ[0]) * 100); i++) {
-                    bigarr.push(x_direction); //console.log("" + this.loc_rel_to_targ[0]);
-                }
-                for (i = 0; i < (Math.abs(this.loc_rel_to_targ[1]) * 100); i++) {
-                    bigarr.push(y_direction); //console.log(this.loc_rel_to_targ[1]);
-                }
-                if (bigarr.length > 0) {allequal = false;}
-                
-                oldbarr = bigarr;
-                // avoid obstacles
-                bigarr = this.avoid_obstacles(bigarr);
-                newbarr = bigarr;
-                //console.log(bigarr);
                 
                 if (!allequal) {
                     var bigar_index = Math.floor(Math.random() * bigarr.length);
                     var move = bigarr[bigar_index];
                     if (move == 0) {
                         if ($(".sqmeter").eq(this.location - env.height).hasClass("obstacle")) {
-                            console.log("failed: " + bigar_index);
+                            console.log("failed on move up: " + stim_arr);
+                            console.log(checkarr);
                         }
                         this.move_up();
                     }
                     else if (move == 1) {
                         if ($(".sqmeter").eq(this.location - 1).hasClass("obstacle")) {
-                            console.log("failed: " + bigar_index);
+                            console.log("failed on move left: " + stim_arr);
+                            console.log(checkarr);
                         }
                         this.move_left();
                     }
                     else if (move == 2) {
                         if ($(".sqmeter").eq(this.location + 1).hasClass("obstacle")) {
-                            console.log("failed: " + bigar_index);
+                            console.log("failed on move right: " + stim_arr);
+                            console.log(checkarr);
                         }
                         this.move_right();
                     }
                     else if (move == 3) {
                         if ($(".sqmeter").eq(this.location + env.height).hasClass("obstacle")) {
-                            console.log("failed: " + bigar_index);
+                            console.log("failed on move down: " + stim_arr);
+                            console.log(checkarr);
                         }
                         this.move_down();
                     }
-                } else {
-                    var move = Math.floor(Math.random() * 4);
-                    if (move == 0) {this.move_up()}
-                    else if (move == 1) {this.move_left()}
-                    else if (move == 2) {this.move_right()}
-                    else if (move == 3) {this.move_down()}
+                } else { //console.log("don't move");
+//                    var move = Math.floor(Math.random() * 4);
+//                    if (move == 0) {this.move_up()}
+//                    else if (move == 1) {this.move_left()}
+//                    else if (move == 2) {this.move_right()}
+//                    else if (move == 3) {this.move_down()}
                 }
-                //setTimeout((function(scope){return function(){scope.wander_directed(target)};})(this), this.wander_rate);
+                setTimeout((function(scope){return function(){scope.wander_directed(target)};})(this), this.wander_rate);
             };
-    
-            // rewrite to do modifications on memcount_arr instead of bigarr
-            this.nucleus.avoid_obstacles = function(bigarr) {
-                var new_bigarr = bigarr;
+            
+            //test vars for above function during failure of avoid obstacles
+            var checkarr = [];
+            //
+            // rewrite to do modifications on stim_arr instead of bigarr
+            this.nucleus.avoid_obstacles = function(stim_arr) {
+                var new_stim_arr = stim_arr;
                 var check_arr = [this.location - 30, this.location - 1, this.location + 1, this.location + 30];
-                //console.log(check_arr);
-                for (i = 0; i < check_arr.length; i++) {
-                    //var turn;
-                    //if (i == 0) {turn = }
+                for (var i = 0; i < check_arr.length; i++) {
                     if ($(".sqmeter").eq(check_arr[i]).hasClass("obstacle")) {
-                        new_bigarr = new_bigarr.filter(function(element) {
-                            return element !== i;
-                        });
+                        
+                        //console.log($(".sqmeter").eq(check_arr[i]));
+                        var temp = new_stim_arr[i];
+                        new_stim_arr[i] = 0;
+                        
+                        var stim_arr_mode = (function() {
+                            var mode = 0;
+                            var mode_val = 0;
+                            for (var i = 0; i < new_stim_arr.length; i++) {
+                                if (new_stim_arr[i] > mode_val) {
+                                    mode = i;
+                                    mode_val = new_stim_arr[i];
+                                }
+                            }
+                            return mode;
+                        })();
+                        
+//                        var stim_arr_mode = this.mode(new_stim_arr);
+//                        console.log(stim_arr_mode);
+                        if (stim_arr_mode !== 0) {
+                            new_stim_arr[stim_arr_mode] += temp;
+                        }
+                        
+//                        console.log(new_stim_arr);
                     }
                 }
-                return new_bigarr;
+//                console.log("-----");
+                checkarr = check_arr;
+                return new_stim_arr;
+//                return stim_arr;
+            };
+    
+            this.nucleus.mode = function(arr) {
+                var mode = 0;
+                var mode_val = 0;
+                for (var i = 0; i < arr.length; i++) {console.log("ggggggg");
+                    if (arr[i] > mode_val) {
+                        mode = i;
+                        mode_val = arr[i];
+                    }
+                }
+                return mode;
             };
                 
-            // rewrite to do modifications on memcount_arr instead of bigarr
-            this.nucleus.next_mode = function(bigarr) {
-                var mode_arr = [];
-                for (i = 0; i < bigarr.length; i++) {
-                    if (!mode_arr.includes(bigarr[i])) {
-                        mode_arr.push
-                    }
-                    
-                }
-            }
+//            // rewrite to do modifications on stim_arr instead of bigarr
+//            this.nucleus.next_mode = function(bigarr) {
+//                var mode_arr = [];
+//                for (var i = 0; i < bigarr.length; i++) {
+//                    if (!mode_arr.includes(bigarr[i])) {
+//                        mode_arr.push
+//                    }
+//                    
+//                }
+//            }
     
-    this.nucleus.reaction_moveweight = function(target_location, reaction_type) {
-        
-    };
-    
+//    this.nucleus.reaction_moveweight = function(target_location, reaction_type) {
+//        
+//    };
+
 
     
     // Instantiate cell and its range
@@ -357,7 +395,7 @@ function Cell(prosp_range, name, test_loc) {
                 this.findrange_outer();
                 $(".sqmeter").eq(this.location).addClass("cell_" + this.name);
 
-                for (i = 0; i < this.range.length; i++) {
+                for (var i = 0; i < this.range.length; i++) {
                     $(".sqmeter").eq(this.range[i]).addClass("range_" + this.name + " remembered_" + this.name);
                     $(".sqmeter").eq(this.range[i]).data("ttl_" + this.name, this.pathmem);
                 }
@@ -417,7 +455,7 @@ function Cell(prosp_range, name, test_loc) {
 function Obst(start_loc, end_loc) {
     this.loc = get_area_array(start_loc, end_loc);
     this.inst = function() {
-        for (i = 0; i < this.loc.length; i++) {
+        for (var i = 0; i < this.loc.length; i++) {
             $(".sqmeter").eq(this.loc[i]).addClass("obstacle");
         }
     }
@@ -428,14 +466,17 @@ function Obst(start_loc, end_loc) {
 var a = "";
 var ddd = "";
 $(window).on("load", function() {
+    
+    
     env.instantiate();
 //    a = new Cell("a", 3);
 //    b = new Cell("b", 3);
-    a = new Cell("a", 3, 145); // hard-coded for testing obstacles
+    a = new Cell("a", 3, 145); // hard-coded for testing obstacles // was 288
     b = new Cell("b", 3, 666); // hard-coded for testing obstacles
     a.nucleus.set_target_loc(b);
     b.nucleus.set_target_loc(a);
     ddd = new Obst(310, 619);
+    $(".sqmeter").hover(function() {$(this).addClass("obstacle")});
 });
 
 $(document).on("keydown", function(e) {
@@ -505,11 +546,14 @@ function detdifference(start_location, target_location) {
 function get_area_array(start_coord, end_coord) {
     var area_array = [];
     var arr = detdifference(start_coord, end_coord);
-    for (i = 0; i < arr[1]; i++) {
-        for (j = 0; j < arr[0]; j++) {
+    for (var i = 0; i < arr[1]; i++) {
+        for (var j = 0; j < arr[0]; j++) {
             area_array.push(start_coord + j);
         }
         start_coord += env.height;
     }
     return area_array;
 }
+
+
+
